@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BATs - Campus Direct</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background-color: #f9fafb; /* gray-50 */
+      }
+
+      #mobileSidebar::-webkit-scrollbar {
+        display: none;
+      }
+      #mobileSidebar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+
+      /* Layout principal avec flex */
+      .main-container {
+        flex: 1 1 auto;
+        display: flex;
+        min-height: 0; /* important pour scrollbar enfant */
+      }
+
+      /* Sidebar desktop */
+      #desktopSidebar {
+        flex-shrink: 0;
+      }
+
+      /* Viewer prend tout le reste */
+      main {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding: 1rem;
+        background: white;
+        box-shadow: inset 0 0 10px #ddd;
+        border-radius: 0.5rem;
+        overflow: hidden;
+      }
+
+      #titreDocument {
+        margin-bottom: 1rem;
+        text-align: center;
+        color: #2563eb; /* blue-700 */
+        font-weight: 600;
+        font-size: 1.25rem;
+      }
+
+      #viewer {
+        flex: 1 1 auto;
+        overflow: auto;
+        min-height: 0;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        background: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #viewer iframe,
+      #viewer img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        border: none;
+      }
+
+      /* Footer discret */
+      footer {
+        text-align: center;
+        padding: 0.25rem 0;
+        font-size: 0.875rem; /* text-sm */
+        color: #9ca3af; /* Tailwind gray-400 */
+        font-style: italic;
+        user-select: none;
+        margin-top: 0.5rem;
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen">
+    <!-- Header Mobile -->
+    <header
+      class="md:hidden bg-white border-b border-gray-200 shadow p-4 flex items-center justify-between"
+    >
+      <button id="openSidebarBtn" class="text-blue-700">
+        ☰ Liste des BATs
+      </button>
+      <h1 class="text-xl font-bold text-blue-700">📄 Campus Direct</h1>
+      <div class="w-10"></div>
+    </header>
+
+    <div class="main-container">
+      <!-- Sidebar Desktop -->
+      <aside
+        id="desktopSidebar"
+        class="hidden md:flex w-72 bg-white border-r border-gray-200 shadow-lg flex-col"
+      >
+        <h1 class="text-2xl font-bold text-blue-700 p-6 border-b">
+          📄 Campus Direct
+        </h1>
+        <div class="p-4 border-b">
+          <input
+            id="searchInputDesktop"
+            type="text"
+            placeholder="Rechercher un BAT..."
+            class="w-full px-3 py-2 border rounded-lg focus:ring-blue-400"
+          />
+        </div>
+        <div class="p-4 border-b">
+          <label for="anneeFilterDesktop">Filtrer par année</label>
+          <select
+            id="anneeFilterDesktop"
+            class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-blue-400"
+          >
+            <option value="all">Toutes les années</option>
+            <option value="2023">2023</option>
+            <option value="2022">2022</option>
+          </select>
+        </div>
+        <div class="p-4 border-b">
+          <label for="promotionFilterDesktop">Filtrer par promotion</label>
+          <select
+            id="promotionFilterDesktop"
+            class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-blue-400"
+          >
+            <option value="all">Toutes les promotions</option>
+            <option value="Licence 3">Licence 3</option>
+          </select>
+        </div>
+        <nav
+          id="batsListDesktop"
+          class="flex-1 overflow-y-auto p-4 space-y-3"
+        ></nav>
+      </aside>
+
+      <!-- Sidebar Mobile -->
+      <aside
+        id="mobileSidebar"
+        class="fixed inset-y-0 left-0 w-72 bg-white border-r transform -translate-x-full transition duration-300 z-50 flex flex-col"
+      >
+        <div class="flex items-center justify-between p-6 border-b">
+          <h2 class="text-2xl font-bold text-blue-700">📄 Campus Direct</h2>
+          <button
+            id="closeSidebarBtn"
+            class="text-gray-700 hover:text-blue-700"
+          >
+            ✕
+          </button>
+        </div>
+        <div class="p-4 border-b">
+          <input
+            id="searchInputMobile"
+            type="text"
+            placeholder="Rechercher un BAT..."
+            class="w-full px-3 py-2 border rounded-lg focus:ring-blue-400"
+          />
+        </div>
+        <div class="p-4 border-b">
+          <label for="anneeFilterMobile">Filtrer par année</label>
+          <select
+            id="anneeFilterMobile"
+            class="w-full mt-1 px-3 py-2 border rounded-lg"
+          >
+            <option value="all">Toutes les années</option>
+            <option value="2023">2023</option>
+          </select>
+        </div>
+        <div class="p-4 border-b">
+          <label for="promotionFilterMobile">Filtrer par promotion</label>
+          <select
+            id="promotionFilterMobile"
+            class="w-full mt-1 px-3 py-2 border rounded-lg"
+          >
+            <option value="all">Toutes les promotions</option>
+            <option value="Licence 3">Licence 3</option>
+          </select>
+        </div>
+        <nav
+          id="batsListMobile"
+          class="flex-1 overflow-y-auto p-4 space-y-3"
+        ></nav>
+      </aside>
+
+      <!-- Overlay -->
+      <div
+        id="overlay"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden z-40"
+      ></div>
+
+      <!-- Viewer -->
+      <main>
+        <h2 id="titreDocument">
+          Sélectionnez un BAT à gauche pour le visualiser
+        </h2>
+        <div
+          id="viewer"
+          class="border rounded-lg overflow-hidden bg-white flex items-center justify-center"
+        >
+          <p id="messageAucun" class="text-center text-gray-500">
+            Aucun BAT sélectionné
+          </p>
+        </div>
+        <footer>Créé par Nathan Monga</footer>
+      </main>
+    </div>
+
+    <script>
+      const bats = [
+        {
+          id: 1,
+          titre: "BAT Maths L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_math_L2_2025.jpg",
+          type: "image",
+        },
+        {
+          id: 2,
+          titre: "BAT Algo L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_algo_L2_2025.jpg",
+          type: "image",
+        },
+
+        {
+          id: 3,
+          titre: "BAT MAI(Méthode d'Analyse Informatique) L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_MAI_L2_2025.jpg",
+          type: "image",
+        },
+
+        {
+          id: 4,
+          titre: "BAT SE (Système d'exploitation) L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_SE_L2_2025.jpg",
+          type: "image",
+        },
+
+        {
+          id: 5,
+          titre: "BAT SO (Structure des ordinateurs) L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_SO_L2_2025.jpg",
+          type: "image",
+        },
+        {
+          id: 6,
+          titre:
+            "BAT Comptabilité Analytique d'Exploitation L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_compta_L2_2025.jpg",
+          type: "image",
+        },
+        {
+          id: 7,
+          titre: "BAT Informatique Juridique L2 2025 1ere session",
+          annee: "2025",
+          promotion: "L2",
+          url: "/bats/bat_informatiqueJuridique_L2_2025.jpg",
+          type: "image",
+        },
+      ];
+
+      const batsListDesktop = document.getElementById("batsListDesktop");
+      const batsListMobile = document.getElementById("batsListMobile");
+      const viewer = document.getElementById("viewer");
+      const titreDocument = document.getElementById("titreDocument");
+      const messageAucun = document.getElementById("messageAucun");
+      const searchInputDesktop = document.getElementById("searchInputDesktop");
+      const searchInputMobile = document.getElementById("searchInputMobile");
+      const anneeFilterDesktop = document.getElementById("anneeFilterDesktop");
+      const anneeFilterMobile = document.getElementById("anneeFilterMobile");
+      const promotionFilterDesktop = document.getElementById(
+        "promotionFilterDesktop"
+      );
+      const promotionFilterMobile = document.getElementById(
+        "promotionFilterMobile"
+      );
+
+      const mobileSidebar = document.getElementById("mobileSidebar");
+      const overlay = document.getElementById("overlay");
+      const openSidebarBtn = document.getElementById("openSidebarBtn");
+      const closeSidebarBtn = document.getElementById("closeSidebarBtn");
+
+      function afficherBATs(liste, container) {
+        container.innerHTML = "";
+        if (liste.length === 0) {
+          container.innerHTML =
+            '<p class="text-gray-500 text-center">Aucun BAT trouvé.</p>';
+          return;
+        }
+
+        liste.forEach((bat) => {
+          const btn = document.createElement("button");
+          btn.innerHTML = `
+            <div class="flex flex-col text-left">
+              <span class="font-semibold">${bat.titre}</span>
+              <span class="text-sm text-gray-600">${bat.annee} • ${bat.promotion}</span>
+            </div>`;
+          btn.className =
+            "w-full text-left px-4 py-2 hover:bg-blue-100 rounded focus:ring-2";
+          btn.onclick = () => {
+            afficherDocument(bat);
+            if (window.innerWidth < 768) fermerSidebarMobile();
+          };
+          container.appendChild(btn);
+        });
+      }
+
+      function afficherDocument(bat) {
+        viewer.innerHTML = "";
+        messageAucun.style.display = "none";
+        titreDocument.textContent = bat.titre;
+
+        if (bat.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = bat.url;
+          iframe.style.border = "none";
+          viewer.appendChild(iframe);
+        } else if (bat.type === "image") {
+          const img = document.createElement("img");
+          img.src = bat.url;
+          img.alt = bat.titre;
+          viewer.appendChild(img);
+        }
+      }
+
+      function filtrerBATs() {
+        const recherche = searchInputDesktop.value || searchInputMobile.value;
+        const annee =
+          anneeFilterDesktop.value !== "all"
+            ? anneeFilterDesktop.value
+            : anneeFilterMobile.value;
+        const promotion =
+          promotionFilterDesktop.value !== "all"
+            ? promotionFilterDesktop.value
+            : promotionFilterMobile.value;
+
+        const results = bats.filter((bat) => {
+          return (
+            (annee === "all" || bat.annee === annee) &&
+            (promotion === "all" || bat.promotion === promotion) &&
+            bat.titre.toLowerCase().includes(recherche.toLowerCase())
+          );
+        });
+
+        afficherBATs(results, batsListDesktop);
+        afficherBATs(results, batsListMobile);
+
+        // reset viewer
+        viewer.innerHTML = "";
+        titreDocument.textContent =
+          "Sélectionnez un BAT à gauche pour le visualiser";
+        messageAucun.style.display = "block";
+      }
+
+      function ouvrirSidebarMobile() {
+        mobileSidebar.classList.remove("-translate-x-full");
+        overlay.classList.remove("hidden");
+        document.body.style.overflow = "hidden";
+      }
+
+      function fermerSidebarMobile() {
+        mobileSidebar.classList.add("-translate-x-full");
+        overlay.classList.add("hidden");
+        document.body.style.overflow = "";
+      }
+
+      openSidebarBtn.onclick = ouvrirSidebarMobile;
+      closeSidebarBtn.onclick = fermerSidebarMobile;
+      overlay.onclick = fermerSidebarMobile;
+
+      searchInputDesktop.oninput = filtrerBATs;
+      searchInputMobile.oninput = filtrerBATs;
+      anneeFilterDesktop.onchange = filtrerBATs;
+      anneeFilterMobile.onchange = filtrerBATs;
+      promotionFilterDesktop.onchange = filtrerBATs;
+      promotionFilterMobile.onchange = filtrerBATs;
+
+      afficherBATs(bats, batsListDesktop);
+      afficherBATs(bats, batsListMobile);
+    </script>
+  </body>
+</html>
